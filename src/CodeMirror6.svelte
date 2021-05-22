@@ -4,7 +4,8 @@
   import {EditorState,Compartment} from "@codemirror/state"
   import {basicSetup} from "@codemirror/basic-setup"
   import {html} from "@codemirror/lang-html"
-  import emmet from '@emmetio/codemirror-plugin'
+
+  // since we can't do emmet(CodeMirror), we'll have to pass emmet in as an extension instead
   
   let element
 
