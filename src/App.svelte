@@ -12,7 +12,7 @@
 
   <div>
     CodeMirror 6 (Emmet doesn't work)
-    <!-- <NewVersion /> -->
+    <NewVersion />
   </div>
 
 </main>

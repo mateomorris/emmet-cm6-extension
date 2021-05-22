@@ -2,7 +2,7 @@
   import {onMount} from 'svelte'
   import CodeMirror from 'codemirror/lib/codemirror'
   import 'codemirror/mode/xml/xml.js'
-  import emmet from './emmet-plugin/extension'
+  import emmet from '@emmetio/codemirror-plugin';
 
   onMount(() => {
     emmet(CodeMirror);
