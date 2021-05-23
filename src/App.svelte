@@ -11,7 +11,7 @@
   </div>
 
   <div>
-    CodeMirror 6 (Emmet doesn't work)
+    CodeMirror 6 (Emmet mostly works)
     <NewVersion />
   </div>
 
