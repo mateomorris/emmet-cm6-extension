@@ -5,11 +5,8 @@
   import {basicSetup} from "@codemirror/basic-setup"
   import {html} from "@codemirror/lang-html"
   import {docSizePlugin} from './new-emmet'
-  import {keymap} from "@codemirror/view"
-  import expand, { extract } from 'emmet';
+  import emmetExt from './emmet-codemirror-ext'
 
-  // since we can't do emmet(CodeMirror), we'll have to pass emmet in as an extension instead
-  
   let element
 
   let view
@@ -23,22 +20,7 @@
         language.of(html()),
         docSizePlugin,
         // Attempting to re-imlement emmet as an extension
-        keymap.of([
-          { 
-            key: "Tab", 
-            run: () => {
-              const { state } = view.viewState
-              const { from, to } = view.viewState.state.selection.main
-              const [ text ] = state.doc.text
-              const { abbreviation, start, end } = extract(text)
-              const expanded = expand(abbreviation)
-              view.dispatch({
-                changes: {from: start, to: end, insert: expanded}
-              })
-              return true
-            }
-          }
-        ]),
+        emmetExt(),
       ]
     })
 
