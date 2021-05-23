@@ -1,3 +1,6 @@
+import {EditorView} from "@codemirror/basic-setup"
+import {StateField, EditorState} from "@codemirror/state"
+import {Tooltip, showTooltip} from "@codemirror/tooltip"
 import {keymap} from "@codemirror/view"
 import expand, { extract } from 'emmet';
 
@@ -5,18 +8,18 @@ export default function emmetExt() {
   /**
    * Given a start and end position, parse out a text string from the document.
    * If start and end are the same (no selection), returns the current line.
-   * @param {EditorView} view
+   * @param {EditorState} state
    * @param {number} start
    * @param {number} end
    * @returns {{selection: string, start: number}}
    */
-  function getSelection(view, start, end) {
-    const lines = view.viewState.state.doc.text;
+  function getSelection(state, start, end) {
+    const lines = state.doc.text;
     let selection = '';
     let pointer = 0;
     let startPointer = 0;
     for (let i = 0; i < lines.length; i++) {
-      let currLine = lines[i] + view.viewState.state.lineBreak;
+      let currLine = lines[i] + state.lineBreak;
       const lineLength = currLine.length
       if (start < (pointer + lineLength)) {
         // selection starts in this line
@@ -51,12 +54,12 @@ export default function emmetExt() {
 
   /**
    * Attempt to get a valid Emmet abbreviation from the current document selection
-   * @param {EditorView} view
+   * @param {EditorState} state
    * @returns {{start: number, end: number, abbreviation: string}|null}
    */
-  function getEmmetAbbreviation(view) {
-    const { from, to } = view.viewState.state.selection.main
-    const {selection, start: selectionStart} = getSelection(view, from, to)
+  function getEmmetAbbreviation(state) {
+    const { from, to } = state.selection.main
+    const {selection, start: selectionStart} = getSelection(state, from, to)
     const extraction = extract(selection)
     // if null, emmet failed to find a valid abbreviation in the selection/line
     if (extraction) {
@@ -69,13 +72,59 @@ export default function emmetExt() {
 
     return null
   }
+  
+  const cursorTooltipField = StateField.define<readonly Tooltip[]>({
+    create: getCursorTooltips,
+
+    update(tooltips, tr) {
+      if (!tr.docChanged && !tr.selection) return tooltips
+      return getCursorTooltips(tr.state)
+    },
+
+    provide: f => showTooltip.computeN([f], state => state.field(f))
+  })
+  function getCursorTooltips(state: EditorState): readonly Tooltip[] {
+    return state.selection.ranges
+      .filter(range => range.empty)
+      .map(range => {
+        let line = state.doc.lineAt(range.head)
+        let text = line.number + ":" + (range.head - line.from)
+        const extraction = getEmmetAbbreviation(state)
+        if (extraction) {
+          const expanded = expand(extraction.abbreviation)
+          return {
+            pos: extraction.start,
+            above: false,
+            strictSide: true,
+            class: "cm-cursor-tooltip",
+            create: () => {
+              let dom = document.createElement("div")
+              dom.classList.add('ͼh')
+              dom.textContent = expanded
+              return {dom}
+            }
+          }
+        }
+        return null;
+      })
+  }
+  const cursorTooltipBaseTheme = EditorView.baseTheme({
+    ".cm-tooltip.cm-cursor-tooltip": {
+      backgroundColor: "#ffffff",
+      border: "solid 1px #dcdcdc",
+      padding: "2px 7px",
+      whiteSpace: "pre",
+    }
+  })
 
   // to later add any tooltip functionality, make this an array and pass other extensions
-  return keymap.of([
-    {
+  return [
+    cursorTooltipBaseTheme,
+    cursorTooltipField,
+    keymap.of([{
       key: "Tab",
-      run: (view) => {
-        const extraction = getEmmetAbbreviation(view);
+      run: (view: EditorView) => {
+        const extraction = getEmmetAbbreviation(view.viewState.state);
         if (extraction) {
           const {abbreviation, start, end} = extraction
           const expanded = expand(abbreviation)
@@ -90,6 +139,6 @@ export default function emmetExt() {
         }
         return false
       }
-    }
-  ]);
+    }]),
+  ];
 }
