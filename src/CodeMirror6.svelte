@@ -1,6 +1,7 @@
 <script>
   import {onMount} from 'svelte'
-  import {EditorView} from "@codemirror/view"
+  import {defaultTabBinding} from "@codemirror/commands"
+  import {EditorView,keymap} from "@codemirror/view"
   import {EditorState,Compartment} from "@codemirror/state"
   import {basicSetup} from "@codemirror/basic-setup"
   import {html} from "@codemirror/lang-html"
@@ -21,6 +22,9 @@
         docSizePlugin,
         // Attempting to re-imlement emmet as an extension
         emmetExt(),
+        keymap.of([
+          defaultTabBinding
+        ])
       ]
     })
 
