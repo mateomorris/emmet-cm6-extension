@@ -4,7 +4,7 @@ import {Tooltip, showTooltip} from "@codemirror/tooltip"
 import {keymap} from "@codemirror/view"
 import expand, { extract } from 'emmet';
 
-export default function emmetExt() {
+export default function emmetExt({theme = {}, config = {}} = {}) {
   /**
    * Given a start and end position, parse out a text string from the document.
    * If start and end are the same (no selection), returns the current line.
@@ -91,7 +91,7 @@ export default function emmetExt() {
         let text = line.number + ":" + (range.head - line.from)
         const extraction = getEmmetAbbreviation(state)
         if (extraction) {
-          const expanded = expand(extraction.abbreviation)
+          const expanded = expand(extraction.abbreviation, config)
           return {
             pos: extraction.start,
             above: false,
@@ -110,10 +110,8 @@ export default function emmetExt() {
   }
   const cursorTooltipBaseTheme = EditorView.baseTheme({
     ".cm-tooltip.cm-cursor-tooltip": {
-      backgroundColor: "#ffffff",
-      border: "solid 1px #dcdcdc",
-      padding: "2px 7px",
       whiteSpace: "pre",
+      ...theme
     }
   })
 
@@ -127,7 +125,7 @@ export default function emmetExt() {
         const extraction = getEmmetAbbreviation(view.viewState.state);
         if (extraction) {
           const {abbreviation, start, end} = extraction
-          const expanded = expand(abbreviation)
+          const expanded = expand(abbreviation, config)
           view.dispatch({
             changes: {
               from: start,
