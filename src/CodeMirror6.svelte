@@ -5,7 +5,6 @@
   import {EditorState,Compartment} from "@codemirror/state"
   import {basicSetup} from "@codemirror/basic-setup"
   import {html} from "@codemirror/lang-html"
-  import {docSizePlugin} from './new-emmet'
   import emmetExt from './emmet-codemirror-ext'
 
   let element
