@@ -4,7 +4,8 @@
   import {EditorView,keymap} from "@codemirror/view"
   import {EditorState,Compartment} from "@codemirror/state"
   import {basicSetup} from "@codemirror/basic-setup"
-  import {html} from "@codemirror/lang-html"
+  import {css} from "@codemirror/lang-css"
+  import { html } from '@codemirror/lang-html';
   import emmetExt from './emmet-codemirror-ext'
 
   let element
@@ -14,12 +15,17 @@
     const language = new Compartment
 
     const state = EditorState.create({
-      doc: "main>div*3>ul>li*5",
+      doc: "h1 {\n\t\n}",
       extensions: [
         basicSetup,
-        language.of(html()),
-        // Attempting to re-imlement emmet as an extension
-        emmetExt(),
+        language.of(css()),
+        // language.of(html()),
+        emmetExt({
+          config: {
+            type: 'stylesheet',
+            syntax: 'css'
+          }
+        }),
         keymap.of([
           defaultTabBinding
         ])

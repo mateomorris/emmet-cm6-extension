@@ -1,15 +1,16 @@
 <script>
   import {onMount} from 'svelte'
   import CodeMirror from 'codemirror/lib/codemirror'
-  import 'codemirror/mode/xml/xml.js'
+  // import 'codemirror/mode/xml/xml.js'
+  import 'codemirror/mode/css/css.js'
   import emmet from '@emmetio/codemirror-plugin';
 
   onMount(() => {
     emmet(CodeMirror);
 
     CodeMirror(element, {
-      value: "<h1>Welcome!</h1>",
-      mode:  "text/html",
+      value: "h1 {\n\t\n}",
+      mode:  "text/css",
       extraKeys: {
           'Tab': 'emmetExpandAbbreviation',
           'Esc': 'emmetResetAbbreviation',
