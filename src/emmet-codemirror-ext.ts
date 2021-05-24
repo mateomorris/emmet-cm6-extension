@@ -14,7 +14,7 @@ export default function emmetExt() {
    * @returns {{selection: string, start: number}}
    */
   function getSelection(state, start, end) {
-    const lines = state.doc.text;
+    const lines = state.doc.text || '';
     let selection = '';
     let pointer = 0;
     let startPointer = 0;
