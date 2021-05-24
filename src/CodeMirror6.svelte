@@ -18,7 +18,6 @@
       extensions: [
         basicSetup,
         language.of(html()),
-        docSizePlugin,
         // Attempting to re-imlement emmet as an extension
         emmetExt(),
         keymap.of([
