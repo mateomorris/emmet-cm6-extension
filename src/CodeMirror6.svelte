@@ -6,7 +6,8 @@
   import {basicSetup} from "@codemirror/basic-setup"
   import {css} from "@codemirror/lang-css"
   import { html } from '@codemirror/lang-html';
-  import emmetExt from './emmet-codemirror-ext'
+  import emmetExt from './emmet-codemirror-ext';
+  import cssPeek from './css-peek';
 
   let element
 
@@ -15,16 +16,17 @@
     const language = new Compartment
 
     const state = EditorState.create({
-      doc: "h1 {\n\t\n}",
+      doc: "<main id=\"app\" class=\"container m3 p5\"></main>",
       extensions: [
         basicSetup,
-        language.of(css()),
-        // language.of(html()),
+        // language.of(css()),
+        language.of(html()),
+        cssPeek(),
         emmetExt({
           config: {
-            type: 'stylesheet',
-            syntax: 'css'
-          }
+            type: 'html',
+            syntax: 'html'
+          },
         }),
         keymap.of([
           defaultTabBinding
