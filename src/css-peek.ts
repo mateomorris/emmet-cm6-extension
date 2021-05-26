@@ -1,57 +1,116 @@
-import {EditorView} from "@codemirror/basic-setup"
-import {StateField, EditorState} from "@codemirror/state"
-import {keymap} from "@codemirror/view"
-import {Tooltip, hoverTooltip} from "@codemirror/tooltip"
+import {hoverTooltip} from "@codemirror/tooltip"
 
-const lookupCssClass = (className) => {
-  return className;
-}
-const isInAttribute = (attr, line, start, end) => {
-  const regex = new RegExp( attr + '=[\'"]([\\w ]*?)[\'"]', 'gm');
-  let m;
+export default function cssPeek({src = [], cssContent = []} = {}) {
 
-  while ((m = regex.exec(line)) !== null) {
-    // This is necessary to avoid infinite loops with zero-width matches
-    if (m.index === regex.lastIndex) {
-      regex.lastIndex++;
-    }
+  function getCssContent() {
+    const content = cssContent || [];
 
-    const matchStart = m.index + attr.length + 2;
-    const matchEnd = m.index + m[0].length - 1;
-    if (start >= matchStart && end <= matchEnd) {
-      return true;
+    //todo: fetch from files in `src` prop
+    //todo: cache files
+
+    return content.join("\n");
+  }
+  function getStyleSheet(unique_title) {
+    for(var i=0; i<document.styleSheets.length; i++) {
+      var sheet = document.styleSheets[i];
+      if(sheet.title == unique_title) {
+        return sheet;
+      }
     }
   }
-  return false;
-}
-
-export const wordHover = hoverTooltip((view, pos, side) => {
-  let {from, to, text} = view.state.doc.lineAt(pos)
-  let start = pos, end = pos
-  while (start > from && /\w/.test(text[start - from - 1])) start--
-  while (end < to && /\w/.test(text[end - from])) end++
-  if (start == pos && side < 0 || end == pos && side > 0)
-    return null
-
-  const word = text.slice(start, end);
-  const isCssClass = isInAttribute('class', text, start, end)
-  if (!isCssClass)
-    return null
-
-  return {
-    pos: start,
-    end,
-    above: true,
-    create(view) {
-      let dom = document.createElement("div")
-      dom.textContent = word
-      return {dom}
+  async function lookupCssClass(className: String) {
+    const sheetTitle = 'cm-styles';
+    let stylesheet = getStyleSheet(sheetTitle)
+    if (!stylesheet) {
+      const cssContent = getCssContent()
+      const el = document.createElement('style');
+      el.innerHTML = cssContent;
+      el.setAttribute('disabled', 'disabled')
+      el.title = sheetTitle;
+      document.body.appendChild(el);
+      stylesheet = getStyleSheet(sheetTitle);
     }
-  }
-})
 
-export default function cssPeek({theme = {}, config = {}} = {}) {
+    if (!stylesheet)
+      return null;
+
+    const styles = [...stylesheet.cssRules].filter((rule: CSSRule) => {
+      return rule.selectorText == '.' + className;
+    });
+
+    return styles;
+  }
+
+  /**
+   * Test if the start/end positions are within an html attr within the given line
+   * @param attr - attribute type (e.g. "class")
+   * @param line - text content
+   * @param start
+   * @param end
+   */
+  function isInAttribute(attr, line, start, end) {
+    const regex = new RegExp( attr + '=[\'"]([\\w ]*?)[\'"]', 'gm');
+    let m;
+
+    while ((m = regex.exec(line)) !== null) {
+      // This is necessary to avoid infinite loops with zero-width matches
+      if (m.index === regex.lastIndex) {
+        regex.lastIndex++;
+      }
+
+      const matchStart = m.index + attr.length + 2;
+      const matchEnd = m.index + m[0].length - 1;
+      if (start >= matchStart && end <= matchEnd) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function formatCssRules(rules: CSSRule[]) {
+    return rules.map((rule) => {
+      return rule.cssText
+          .replaceAll("{ ", "{\n\t")
+          .replaceAll("; ", ";\n\t")
+          .replaceAll("\t}", "}")
+    }).join('\n')
+  }
+
+  const cssClassHover = hoverTooltip(async (view, pos, side) => {
+    // get the currently hovered word
+    let {from, to, text} = view.state.doc.lineAt(pos)
+    let start = pos, end = pos
+    while (start > from && /\w/.test(text[start - from - 1])) start--
+    while (end < to && /\w/.test(text[end - from])) end++
+    if (start == pos && side < 0 || end == pos && side > 0)
+      return null
+
+    // check if hovering within class attribute (assumes it is not split across multiple lines)
+    const word = text.slice(start, end);
+    const isCssClass = isInAttribute('class', text, start, end)
+    if (!isCssClass)
+      return null
+
+    // lookup and format matching CSS rules
+    const styles = await lookupCssClass(word);
+    let tooltipContent = "No matches found";
+    if (styles && styles.length > 0)
+      tooltipContent = formatCssRules(styles)
+
+    return {
+      pos: start,
+      end,
+      above: false,
+      create(view) {
+        let dom = document.createElement("div")
+        dom.style.whiteSpace = 'pre'
+        dom.textContent = tooltipContent
+        return {dom}
+      }
+    }
+  })
+
   return [
-    wordHover,
+    cssClassHover,
   ];
 }
