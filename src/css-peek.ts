@@ -2,14 +2,21 @@ import {hoverTooltip} from "@codemirror/tooltip"
 
 export default function cssPeek({src = [], cssContent = []} = {}) {
 
-  function getCssContent() {
+  async function getCssContent() {
     const content = cssContent || [];
 
-    //todo: fetch from files in `src` prop
-    //todo: cache files
+    // fetch from files in `src` prop
+    for (let srcFile of src) {
+      const response = await fetch(srcFile);
+      if (response && response.status == 200) {
+        const cssString = await response.text()
+        content.push(cssString)
+      }
+    }
 
     return content.join("\n");
   }
+
   function getStyleSheet(unique_title) {
     for(var i=0; i<document.styleSheets.length; i++) {
       var sheet = document.styleSheets[i];
@@ -29,7 +36,8 @@ export default function cssPeek({src = [], cssContent = []} = {}) {
     let stylesheet = getStyleSheet(sheetTitle)
     if (!stylesheet) {
       // if not already loaded on to page, grab content and load into <style> tag
-      const cssContent = getCssContent()
+      // todo: if css changes after this point, we need to find a way to refresh it
+      const cssContent = await getCssContent()
       const el = document.createElement('style');
       el.innerHTML = cssContent;
       // disable it so it isn't applied. This flickers a little, so there could be a better way to do it.
