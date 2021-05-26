@@ -18,14 +18,22 @@ export default function cssPeek({src = [], cssContent = []} = {}) {
       }
     }
   }
+
+  /**
+   * Injects all CSS content into a disabled <style> tag to use
+   * the browser's parsing of the content and the built-in CSSStyleSheet in js
+   * @param className
+   */
   async function lookupCssClass(className: String) {
     const sheetTitle = 'cm-styles';
     let stylesheet = getStyleSheet(sheetTitle)
     if (!stylesheet) {
+      // if not already loaded on to page, grab content and load into <style> tag
       const cssContent = getCssContent()
       const el = document.createElement('style');
       el.innerHTML = cssContent;
-      el.setAttribute('disabled', 'disabled')
+      // disable it so it isn't applied. This flickers a little, so there could be a better way to do it.
+      el.setAttribute('onload', 'this.disabled=true')
       el.title = sheetTitle;
       document.body.appendChild(el);
       stylesheet = getStyleSheet(sheetTitle);
@@ -34,6 +42,7 @@ export default function cssPeek({src = [], cssContent = []} = {}) {
     if (!stylesheet)
       return null;
 
+    // find rules for this class name
     const styles = [...stylesheet.cssRules].filter((rule: CSSRule) => {
       return rule.selectorText == '.' + className;
     });

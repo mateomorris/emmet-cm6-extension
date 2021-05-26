@@ -11,6 +11,16 @@
 
   let element
 
+  const styles = `.container {
+  display: block;
+  width: 100%;
+}
+main { color: red; }
+
+.m1 { margin: 0.1rem; }
+.m2 { margin: 0.25rem; }
+.m3 { margin: 0.5rem; }`
+
   let view
   onMount(() => {
     const language = new Compartment
@@ -21,7 +31,14 @@
         basicSetup,
         // language.of(css()),
         language.of(html()),
-        cssPeek(),
+        cssPeek({
+          src: [
+            '/style.css',
+          ],
+          cssContent: [
+            styles,
+          ]
+        }),
         emmetExt({
           config: {
             type: 'html',
