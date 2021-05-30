@@ -7,43 +7,29 @@
   import {css} from "@codemirror/lang-css"
   import { html } from '@codemirror/lang-html';
   import emmetExt from './emmet-codemirror-ext';
-  import cssPeek from './css-peek';
 
   let element
 
   const styles = `.container {
   display: block;
   width: 100%;
-}
-main { color: red; }
-
-.m1 { margin: 0.1rem; }
-.m2 { margin: 0.25rem; }
-.m3 { margin: 0.5rem; }`
+}`
 
   let view
   onMount(() => {
     const language = new Compartment
 
     const state = EditorState.create({
-      doc: "<main id=\"app\" class=\"container m3 p5\"></main>",
+      doc: styles,
       extensions: [
         basicSetup,
-        // language.of(css()),
-        language.of(html()),
-        cssPeek({
-          src: [
-            '/style.css',
-          ],
-          cssContent: [
-            styles,
-          ]
-        }),
+        language.of(css()),
+        // language.of(html()),
         emmetExt({
           config: {
-            type: 'html',
-            syntax: 'html'
-          },
+            type: 'css',
+            syntax: 'css'
+          }
         }),
         keymap.of([
           defaultTabBinding

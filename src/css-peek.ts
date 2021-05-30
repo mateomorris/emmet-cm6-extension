@@ -1,9 +1,9 @@
 import {hoverTooltip} from "@codemirror/tooltip"
 
-export default function cssPeek({src = [], cssContent = []} = {}) {
+export default function cssPeek({src = [], css = ''} = {}) {
 
   async function getCssContent() {
-    const content = cssContent || [];
+    const content = [css];
 
     // fetch from files in `src` prop
     for (let srcFile of src) {
