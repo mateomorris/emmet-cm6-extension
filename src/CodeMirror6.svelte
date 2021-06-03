@@ -27,7 +27,7 @@
         // language.of(html()),
         emmetExt({
           config: {
-            type: 'css',
+            type: 'stylesheet',
             syntax: 'css'
           }
         }),

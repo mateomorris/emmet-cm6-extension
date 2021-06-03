@@ -2,8 +2,15 @@ import {EditorView} from "@codemirror/basic-setup"
 import {StateField, EditorState} from "@codemirror/state"
 import {Tooltip, showTooltip} from "@codemirror/tooltip"
 import {keymap} from "@codemirror/view"
-import expand, { extract } from 'emmet';
+import expand, { extract, Config as EmmetConfig } from 'emmet';
 
+/**
+ *
+ * @param theme
+ * @param config
+ * @param config.type - stylesheet | markup
+ * @param config.syntax - e.g. css, stylus, scss, html
+ */
 export default function emmetExt({theme = {}, config = {}} = {}) {
   /**
    * Given a start and end position, parse out a text string from the document.
@@ -62,7 +69,7 @@ export default function emmetExt({theme = {}, config = {}} = {}) {
     const {selection, start: selectionStart} = getSelection(state, from, to)
     const extraction = extract(selection)
     // if null, emmet failed to find a valid abbreviation in the selection/line
-    if (extraction) {
+    if (extraction && extraction.abbreviation !== '{}') {
       return {
         abbreviation: extraction.abbreviation,
         start: extraction.start + selectionStart,
