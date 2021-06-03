@@ -9,27 +9,45 @@
   import emmetExt from './emmet-codemirror-ext';
 
   let element
+  export let type
+  export let content
 
-  const styles = `.container {
-  display: block;
-  width: 100%;
-}`
-
+  function getLanguageOf(type) {
+    const language = new Compartment
+    switch (type) {
+      case 'stylesheet':
+        return language.of(css());
+      case 'markup':
+        return language.of(html());
+      default:
+        throw `Invalid type: ${type}. Expected 'stylesheet' or 'markup'`
+    }
+  }
+  function getEmmetConfig(type) {
+    switch (type) {
+      case 'stylesheet':
+        return {
+          type: 'stylesheet',
+          syntax: 'css'
+        };
+      case 'markup':
+        return {
+          type: 'markup',
+          syntax: 'html'
+        };
+      default:
+        throw `Invalid type: ${type}. Expected 'stylesheet' or 'markup'`
+    }
+  }
   let view
   onMount(() => {
-    const language = new Compartment
-
     const state = EditorState.create({
-      doc: styles,
+      doc: content,
       extensions: [
         basicSetup,
-        language.of(css()),
-        // language.of(html()),
+        getLanguageOf(type),
         emmetExt({
-          config: {
-            type: 'css',
-            syntax: 'css'
-          }
+          config: getEmmetConfig(type),
         }),
         keymap.of([
           defaultTabBinding
