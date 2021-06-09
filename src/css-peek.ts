@@ -103,8 +103,9 @@ export default function cssPeek({src = [], css = ''} = {}) {
       return null
 
     // check if hovering within class attribute (assumes it is not split across multiple lines)
-    const word = text.slice(start, end);
-    const isCssClass = isInAttribute('class', text, start, end)
+    const doc = view.state.doc.toString();
+    const word = view.state.doc.slice(start, end).toString();
+    const isCssClass = isInAttribute('class', doc, start, end)
     if (!isCssClass)
       return null
 

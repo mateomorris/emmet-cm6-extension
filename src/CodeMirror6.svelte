@@ -7,6 +7,7 @@
   import {css} from "@codemirror/lang-css"
   import { html } from '@codemirror/lang-html';
   import emmetExt from './emmet-codemirror-ext';
+  import cssPeek from './css-peek';
 
   let element
   export let type
@@ -48,6 +49,12 @@
         getLanguageOf(type),
         emmetExt({
           config: getEmmetConfig(type),
+        }),
+        cssPeek({
+          src: [
+            './style.css',
+          ],
+          css: '.container { margin: 1rem; }',
         }),
         keymap.of([
           defaultTabBinding
