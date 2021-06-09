@@ -2,7 +2,13 @@ import {EditorView} from "@codemirror/basic-setup"
 import {StateField, EditorState} from "@codemirror/state"
 import {Tooltip, showTooltip} from "@codemirror/tooltip"
 import {keymap} from "@codemirror/view"
-import expand, { extract, Config as EmmetConfig } from 'emmet';
+import expand, { extract, Config } from 'emmet';
+import {syntaxInfo} from './lib/syntax'
+
+export interface EmmetExt {
+  theme: Object,
+  config: Config,
+}
 
 /**
  *
@@ -11,7 +17,8 @@ import expand, { extract, Config as EmmetConfig } from 'emmet';
  * @param config.type - stylesheet | markup
  * @param config.syntax - e.g. css, stylus, scss, html
  */
-export default function emmetExt({theme = {}, config = {}} = {}) {
+export default function emmetExt(extConfig : EmmetExt) {
+  const {theme, config} = extConfig;
   /**
    * Given a start and end position, parse out a text string from the document.
    * If start and end are the same (no selection), returns the current line.
@@ -64,10 +71,22 @@ export default function emmetExt({theme = {}, config = {}} = {}) {
    * @param {EditorState} state
    * @returns {{start: number, end: number, abbreviation: string}|null}
    */
-  function getEmmetAbbreviation(state) {
+  function getEmmetAbbreviation(state: EditorState) {
     const { from, to } = state.selection.main
     const {selection, start: selectionStart} = getSelection(state, from, to)
-    const extraction = extract(selection)
+
+    const info = syntaxInfo(config.syntax, state, from);
+    if (!info.context) return null;
+    if (info.type === 'stylesheet') {
+      // ignore root level CSS
+      if (!info.context.ancestors || !info.context.ancestors.length)
+        return null;
+    }
+
+    const extraction = extract(selection, selectionStart, {
+      lookAhead: info.type !== 'stylesheet',
+      type: info.type,
+    });
     // if null, emmet failed to find a valid abbreviation in the selection/line
     if (extraction && extraction.abbreviation !== '{}') {
       return {
