@@ -4,6 +4,8 @@ import {Tooltip, showTooltip} from "@codemirror/tooltip"
 import {keymap} from "@codemirror/view"
 import expand, { extract, Config as EmmetConfig } from 'emmet';
 
+const ABBR_BLACKLIST = ['{}', '{{}}'];
+
 /**
  *
  * @param theme
@@ -69,7 +71,7 @@ export default function emmetExt({theme = {}, config = {}} = {}) {
     const {selection, start: selectionStart} = getSelection(state, from, to)
     const extraction = extract(selection)
     // if null, emmet failed to find a valid abbreviation in the selection/line
-    if (extraction && extraction.abbreviation !== '{}') {
+    if (extraction && !isExcluded(extraction.abbreviation)) {
       return {
         abbreviation: extraction.abbreviation,
         start: extraction.start + selectionStart,
@@ -78,6 +80,26 @@ export default function emmetExt({theme = {}, config = {}} = {}) {
     }
 
     return null
+  }
+
+  /**
+   * Check if abbreviation should be excluded from being run through
+   * the `expand` command.
+   * This is mainly for handlebars tokens, but there should probably be
+   * a better way to do that.
+   * @param abbr
+   */
+  function isExcluded(abbr) {
+    if (ABBR_BLACKLIST.includes(abbr)) {
+      return true;
+    }
+
+    // skip handlebars tokens
+    if (abbr.match(/\{\{.*\}\}/)) {
+      return true;
+    }
+
+    return false;
   }
   
   const cursorTooltipField = StateField.define<readonly Tooltip[]>({
