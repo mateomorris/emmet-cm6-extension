@@ -6,7 +6,8 @@
   display: block;
   width: 100%;
 }`
-  const markup = `<h1>Hello world!</h1>`;
+  const markup = `<h1>Hello world!</h1>
+ul>li*3`;
 </script>
 <style>
   html, body, #app, main {
