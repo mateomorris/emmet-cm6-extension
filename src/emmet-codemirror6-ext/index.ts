@@ -124,6 +124,10 @@ export default function emmetExt(extConfig : EmmetExt) {
         return null;
     }
 
+    if (selectionStart === 0) { // avoid bug where emmet doesn't work if selection starts at 0
+      selectionStart = null
+    } 
+
     const extraction = extract(selection, selectionStart, {
       lookAhead: info.type !== 'stylesheet',
       type: info.type,
