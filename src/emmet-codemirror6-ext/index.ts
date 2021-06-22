@@ -1,11 +1,11 @@
-import {EditorView} from "@codemirror/basic-setup"
-import {StateField, EditorState, EditorSelection, TransactionSpec, ChangeSpec} from "@codemirror/state"
-import {Tooltip, showTooltip} from "@codemirror/tooltip"
-import {keymap} from "@codemirror/view"
-import {expand} from './lib/emmet';
+import { EditorView } from "@codemirror/basic-setup"
+import { StateField, EditorState, EditorSelection, TransactionSpec, ChangeSpec } from "@codemirror/state"
+import { Tooltip, showTooltip } from "@codemirror/tooltip"
+import { keymap } from "@codemirror/view"
+import { expand } from './lib/emmet';
 import { extract, Config } from 'emmet';
-import {syntaxInfo} from './lib/syntax'
-import {getSelectionsFromSnippet, tabStopEnd, tabStopStart} from './lib/utils'
+import { syntaxInfo } from './lib/syntax'
+import { getSelectionsFromSnippet, tabStopEnd, tabStopStart } from './lib/utils'
 
 export interface EmmetExt {
   theme: Object,
@@ -21,8 +21,8 @@ const ABBR_BLACKLIST = ['{}', '{{}}'];
  * @param config.type - stylesheet | markup
  * @param config.syntax - e.g. css, stylus, scss, html
  */
-export default function emmetExt(extConfig : EmmetExt) {
-  const {theme, config} = extConfig;
+export default function emmetExt(extConfig: EmmetExt) {
+  const { theme, config } = extConfig;
   /**
    * Given a start and end position, parse out a text string from the document.
    * If start and end are the same (no selection), returns the current line.
@@ -114,7 +114,7 @@ export default function emmetExt(extConfig : EmmetExt) {
    */
   function getEmmetAbbreviation(state: EditorState) {
     const { from, to } = state.selection.main
-    const {selection, start: selectionStart} = getSelection(state, from, to)
+    let { selection, start: selectionStart } = getSelection(state, from, to)
 
     const info = syntaxInfo(config.syntax, state, from);
     if (!info.context) return null;
@@ -126,7 +126,7 @@ export default function emmetExt(extConfig : EmmetExt) {
 
     if (selectionStart === 0) { // avoid bug where emmet doesn't work if selection starts at 0
       selectionStart = null
-    } 
+    }
 
     const extraction = extract(selection, selectionStart, {
       lookAhead: info.type !== 'stylesheet',
@@ -192,7 +192,7 @@ export default function emmetExt(extConfig : EmmetExt) {
               let dom = document.createElement("div")
               dom.classList.add('ͼh')
               dom.textContent = expanded
-              return {dom}
+              return { dom }
             }
           }
         }
@@ -215,7 +215,7 @@ export default function emmetExt(extConfig : EmmetExt) {
       run: (view: EditorView) => {
         const extraction = getEmmetAbbreviation(view.state);
         if (extraction) {
-          const {abbreviation, start, end} = extraction
+          const { abbreviation, start, end } = extraction
 
           const snippet = expand(abbreviation, config) as string;
           const snippetPayload = getSelectionsFromSnippet(snippet);
@@ -236,9 +236,9 @@ export default function emmetExt(extConfig : EmmetExt) {
             const rangeStart = start + range[0];
             transaction.selection = EditorSelection.range(rangeStart, rangeStart + placeholder.length);
             transaction.changes.insert = snippet.slice(0, range[0]) +
-                placeholder +
-                snippet.slice(range[1]) +
-                tabStopStart;
+              placeholder +
+              snippet.slice(range[1]) +
+              tabStopStart;
           }
           view.dispatch(transaction)
           return true
